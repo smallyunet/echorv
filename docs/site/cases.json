@@ -1,0 +1,330 @@
+{
+  "project": {
+    "slug": "echorv",
+    "name": "EchoRV",
+    "title": "Explain RISC-V traps from execution to source.",
+    "description": "EchoRV runs or imports RISC-V traces and turns instructions, traps, CSR changes, privilege transitions, and source locations into bounded evidence.",
+    "version": "v0.1.0",
+    "schema": "echorv.evidence.v1",
+    "accent": "#f59e0b",
+    "accentSoft": "rgba(245, 158, 11, 0.13)",
+    "repository": "https://github.com/smallyunet/echorv",
+    "release": "https://github.com/smallyunet/echorv/releases/latest",
+    "boundary": "Spike execution and log import happen locally. The static page ships frozen trace-derived evidence and never runs firmware.",
+    "local": "Run a RISC-V ELF through Spike or import an existing Spike commit log from the CLI."
+  },
+  "cases": [
+    {
+      "id": "illegal-csr-trap",
+      "title": "Illegal CSR trap",
+      "kicker": "Normalized fixture trace",
+      "status": "trap",
+      "summary": "A U-mode csrw satp instruction raises illegal-instruction and transfers control to the M-mode handler.",
+      "source": "fixtures/illegal-csr-trap.json",
+      "command": "echorv explain fixtures/illegal-csr-trap.json \\\n  --format json --profile trap",
+      "metrics": [
+        {
+          "label": "Evidence events",
+          "value": "8"
+        },
+        {
+          "label": "Trap cause",
+          "value": "2"
+        },
+        {
+          "label": "Confidence",
+          "value": "observed + derived"
+        }
+      ],
+      "highlights": [
+        "mcause becomes 2 and mepc records the faulting PC.",
+        "mtval retains the instruction encoding 0x18051073.",
+        "The diagnosis remains derived while the trap fields are observed."
+      ],
+      "evidence": {
+        "schema": "echorv.evidence.v1",
+        "target": {
+          "architecture": "risc-v",
+          "xlen": 64,
+          "isa": "rv64imac_zicsr",
+          "platform": "virt"
+        },
+        "provenance": {
+          "backend": "fixture",
+          "backendVersion": "0.0.1",
+          "input": "illegal-csr-trap"
+        },
+        "profile": "trap",
+        "summary": {
+          "inputEvents": 2,
+          "matchedTraceEvents": 2,
+          "totalEvidenceEvents": 8,
+          "emittedEvidenceEvents": 8,
+          "truncated": false
+        },
+        "events": [
+          {
+            "id": "ev-0000",
+            "kind": "instruction",
+            "traceSequence": 41,
+            "pc": "0x802001a8",
+            "explanation": "U-mode executed `li a0, 0x8000000000000000` at 0x802001a8",
+            "confidence": "observed"
+          },
+          {
+            "id": "ev-0001",
+            "kind": "instruction",
+            "traceSequence": 42,
+            "pc": "0x802001ac",
+            "explanation": "U-mode instruction `csrw satp, a0` at 0x802001ac initiated a trap",
+            "confidence": "observed"
+          },
+          {
+            "id": "ev-0002",
+            "kind": "trap",
+            "traceSequence": 42,
+            "pc": "0x802001ac",
+            "explanation": "trap 2 (illegal-instruction) was raised; tval=0x18051073, handler=0x80000000",
+            "confidence": "observed",
+            "diagnostic": "illegal-instruction",
+            "causedBy": [
+              "ev-0001"
+            ]
+          },
+          {
+            "id": "ev-0003",
+            "kind": "diagnosis",
+            "traceSequence": 42,
+            "pc": "0x802001ac",
+            "explanation": "the instruction is unavailable or not permitted in U-mode; verify enabled ISA extensions, encoding, and CSR privilege",
+            "confidence": "derived",
+            "diagnostic": "illegal-instruction",
+            "causedBy": [
+              "ev-0002"
+            ]
+          },
+          {
+            "id": "ev-0004",
+            "kind": "state-change",
+            "traceSequence": 42,
+            "pc": "0x802001ac",
+            "explanation": "CSR `mcause` changed from 0x0 to 0x2",
+            "confidence": "observed",
+            "causedBy": [
+              "ev-0002"
+            ],
+            "state": {
+              "kind": "csr",
+              "name": "mcause",
+              "before": "0x0",
+              "after": "0x2"
+            }
+          },
+          {
+            "id": "ev-0005",
+            "kind": "state-change",
+            "traceSequence": 42,
+            "pc": "0x802001ac",
+            "explanation": "CSR `mepc` changed from 0x0 to 0x802001ac",
+            "confidence": "observed",
+            "causedBy": [
+              "ev-0002"
+            ],
+            "state": {
+              "kind": "csr",
+              "name": "mepc",
+              "before": "0x0",
+              "after": "0x802001ac"
+            }
+          },
+          {
+            "id": "ev-0006",
+            "kind": "state-change",
+            "traceSequence": 42,
+            "pc": "0x802001ac",
+            "explanation": "CSR `mtval` changed from 0x0 to 0x18051073",
+            "confidence": "observed",
+            "causedBy": [
+              "ev-0002"
+            ],
+            "state": {
+              "kind": "csr",
+              "name": "mtval",
+              "before": "0x0",
+              "after": "0x18051073"
+            }
+          },
+          {
+            "id": "ev-0007",
+            "kind": "privilege-transition",
+            "traceSequence": 42,
+            "pc": "0x802001ac",
+            "explanation": "control transferred from U-mode at 0x802001ac to M-mode at 0x80000000",
+            "confidence": "derived",
+            "causedBy": [
+              "ev-0002"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "load-page-fault",
+      "title": "Load page fault",
+      "kicker": "Imported Spike log",
+      "status": "trap",
+      "summary": "A supervisor-mode load fails address translation and transfers through delegated trap handling.",
+      "source": "fixtures/spike/load-page-fault.log",
+      "command": "echorv import spike fixtures/spike/load-page-fault.log \\\n  --output /tmp/load-page-fault.trace.json\nechorv explain /tmp/load-page-fault.trace.json \\\n  --format json --profile memory",
+      "metrics": [
+        {
+          "label": "Evidence events",
+          "value": "9"
+        },
+        {
+          "label": "Trap cause",
+          "value": "13"
+        },
+        {
+          "label": "Confidence",
+          "value": "observed + derived"
+        }
+      ],
+      "highlights": [
+        "stval records the faulting virtual address.",
+        "The diagnosis points to translation and PTE permission checks without inventing an exact PTE failure.",
+        "Control transfers through the delegated S-mode handler."
+      ],
+      "evidence": {
+        "schema": "echorv.evidence.v1",
+        "target": {
+          "architecture": "risc-v",
+          "xlen": 64,
+          "isa": "rv64imac_zicsr",
+          "platform": "spike"
+        },
+        "provenance": {
+          "backend": "spike",
+          "input": "fixtures/spike/load-page-fault.log"
+        },
+        "profile": "memory",
+        "summary": {
+          "inputEvents": 3,
+          "matchedTraceEvents": 3,
+          "totalEvidenceEvents": 9,
+          "emittedEvidenceEvents": 9,
+          "truncated": false
+        },
+        "events": [
+          {
+            "id": "ev-0000",
+            "kind": "instruction",
+            "traceSequence": 0,
+            "pc": "0x000000008000017c",
+            "explanation": "S-mode executed `ld      t1, 0(a0)` at 0x000000008000017c",
+            "confidence": "observed"
+          },
+          {
+            "id": "ev-0001",
+            "kind": "instruction",
+            "traceSequence": 1,
+            "pc": "0x0000000080000180",
+            "explanation": "S-mode instruction `ld      t2, 0(a3)` at 0x0000000080000180 initiated a trap",
+            "confidence": "observed"
+          },
+          {
+            "id": "ev-0002",
+            "kind": "trap",
+            "traceSequence": 1,
+            "pc": "0x0000000080000180",
+            "explanation": "trap 13 (load-page-fault) was raised; tval=0x0000010080003000, handler=0x0000000080000214",
+            "confidence": "observed",
+            "diagnostic": "load-page-fault",
+            "causedBy": [
+              "ev-0001"
+            ]
+          },
+          {
+            "id": "ev-0003",
+            "kind": "diagnosis",
+            "traceSequence": 1,
+            "pc": "0x0000000080000180",
+            "explanation": "virtual address translation or PTE permission checks failed; inspect satp and the PTE V/R/W/X/U/A/D bits for the faulting address",
+            "confidence": "derived",
+            "diagnostic": "load-page-fault",
+            "causedBy": [
+              "ev-0002"
+            ]
+          },
+          {
+            "id": "ev-0004",
+            "kind": "state-change",
+            "traceSequence": 1,
+            "pc": "0x0000000080000180",
+            "explanation": "trap handling derives CSR `scause` = 0xd",
+            "confidence": "derived",
+            "causedBy": [
+              "ev-0002"
+            ],
+            "state": {
+              "kind": "csr",
+              "name": "scause",
+              "after": "0xd"
+            }
+          },
+          {
+            "id": "ev-0005",
+            "kind": "state-change",
+            "traceSequence": 1,
+            "pc": "0x0000000080000180",
+            "explanation": "trap handling derives CSR `sepc` = 0x0000000080000180",
+            "confidence": "derived",
+            "causedBy": [
+              "ev-0002"
+            ],
+            "state": {
+              "kind": "csr",
+              "name": "sepc",
+              "after": "0x0000000080000180"
+            }
+          },
+          {
+            "id": "ev-0006",
+            "kind": "state-change",
+            "traceSequence": 1,
+            "pc": "0x0000000080000180",
+            "explanation": "trap handling derives CSR `stval` = 0x0000010080003000",
+            "confidence": "derived",
+            "causedBy": [
+              "ev-0002"
+            ],
+            "state": {
+              "kind": "csr",
+              "name": "stval",
+              "after": "0x0000010080003000"
+            }
+          },
+          {
+            "id": "ev-0007",
+            "kind": "privilege-transition",
+            "traceSequence": 1,
+            "pc": "0x0000000080000180",
+            "explanation": "control transferred from S-mode at 0x0000000080000180 to S-mode at 0x0000000080000214 through delegated trap handling",
+            "confidence": "derived",
+            "causedBy": [
+              "ev-0002"
+            ]
+          },
+          {
+            "id": "ev-0008",
+            "kind": "instruction",
+            "traceSequence": 2,
+            "pc": "0x0000000080000214",
+            "explanation": "S-mode executed `csrr    t5, scause` at 0x0000000080000214",
+            "confidence": "observed"
+          }
+        ]
+      }
+    }
+  ]
+}

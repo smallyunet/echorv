@@ -1,8 +1,21 @@
 # EchoRV
 
+[![CI](https://github.com/smallyunet/echorv/actions/workflows/ci.yml/badge.svg)](https://github.com/smallyunet/echorv/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/smallyunet/echorv?style=flat&color=blue)](https://github.com/smallyunet/echorv/releases)
+[![Rust](https://img.shields.io/badge/rust-1.88+-CE422B?style=flat&logo=rust)](https://www.rust-lang.org/)
+[![License](https://img.shields.io/badge/license-MIT-green?style=flat)](LICENSE)
+[![Playground](https://img.shields.io/badge/playground-GitHub_Pages-f59e0b)](https://smallyunet.github.io/echorv/)
+
 **Bounded causal execution evidence for RISC-V firmware.**
 
 EchoRV runs or imports RISC-V execution traces and turns them into compact, source-aware explanations for people, coding agents, CI systems, and IDEs. It is an evidence layer, not another instruction-set simulator.
+
+[Static playground](https://smallyunet.github.io/echorv/) ·
+[latest release](https://github.com/smallyunet/echorv/releases/latest) ·
+[Evidence schema](schemas/echorv.evidence.v1.schema.json)
+
+> The playground is a static GitHub Pages site backed by committed evidence
+> snapshots. Spike execution and log import remain local CLI workflows.
 
 ```text
 U-mode executes csrw satp, a0 at firmware.S:31
@@ -179,6 +192,18 @@ bash scripts/spike-e2e.sh /path/to/spike
 - Hypervisor/VS/VU privilege is not represented yet.
 - Vector lane semantics, multi-hart causality, weak memory, full Linux boot analysis, and RTL timing are outside v0.1.0.
 - Source information depends on DWARF being present and readable.
+
+## Echo family
+
+| Project | Execution domain | Static playground |
+|---|---|---|
+| [EchoEVM](https://github.com/smallyunet/echoevm) | Solidity and EVM bytecode | [Open](https://smallyunet.github.io/echoevm/) |
+| [EchoSVM](https://github.com/smallyunet/echosvm) | Solana transactions and sBPF | [Open](https://smallyunet.github.io/echosvm/) |
+| [EchoRV](https://github.com/smallyunet/echorv) | RISC-V firmware and traces | [Open](https://smallyunet.github.io/echorv/) |
+| [EchoScript](https://github.com/smallyunet/echoscript) | Bitcoin Tapscript inputs | [Open](https://smallyunet.github.io/echoscript/) |
+
+Each project executes locally, emits a versioned evidence schema, and publishes
+frozen reproducible cases through the same static playground contract.
 
 ## License
 
