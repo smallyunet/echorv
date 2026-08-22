@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/smallyunet/echorv/schemas/echorv.trace.v1.schema.json",
+  "title": "EchoRV normalized execution trace",
+  "type": "object",
+  "required": ["schema", "target", "events"],
+  "properties": {
+    "schema": { "const": "echorv.trace.v1" },
+    "target": {
+      "type": "object",
+      "required": ["architecture", "xlen", "isa"],
+      "properties": {
+        "architecture": { "const": "risc-v" },
+        "xlen": { "enum": [32, 64] },
+        "isa": { "type": "string", "minLength": 1 },
+        "platform": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "backend": { "type": "string" },
+        "backendVersion": { "type": "string" },
+        "input": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "events": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/event" }
+    }
+  },
+  "$defs": {
+    "privilege": { "enum": ["M", "S", "U"] },
+    "write": {
+      "type": "object",
+      "required": ["kind", "name", "after"],
+      "properties": {
+        "kind": { "enum": ["register", "csr", "memory"] },
+        "name": { "type": "string", "minLength": 1 },
+        "before": { "type": "string" },
+        "after": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "trap": {
+      "type": "object",
+      "required": ["cause", "name", "targetPc", "toPrivilege"],
+      "properties": {
+        "cause": { "type": "integer", "minimum": 0 },
+        "name": { "type": "string", "minLength": 1 },
+        "tval": { "type": "string" },
+        "targetPc": { "type": "string", "minLength": 1 },
+        "toPrivilege": { "$ref": "#/$defs/privilege" }
+      },
+      "additionalProperties": false
+    },
+    "event": {
+      "type": "object",
+      "required": ["sequence", "pc", "instruction", "privilege"],
+      "properties": {
+        "sequence": { "type": "integer", "minimum": 0 },
+        "pc": { "type": "string", "minLength": 1 },
+        "instruction": { "type": "string", "minLength": 1 },
+        "privilege": { "$ref": "#/$defs/privilege" },
+        "writes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/write" }
+        },
+        "trap": { "$ref": "#/$defs/trap" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
+

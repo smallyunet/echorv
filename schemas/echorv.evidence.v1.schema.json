@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/smallyunet/echorv/schemas/echorv.evidence.v1.schema.json",
+  "title": "EchoRV bounded causal evidence",
+  "type": "object",
+  "required": ["schema", "target", "provenance", "profile", "summary", "events"],
+  "properties": {
+    "schema": { "const": "echorv.evidence.v1" },
+    "target": {
+      "type": "object",
+      "required": ["architecture", "xlen", "isa"],
+      "properties": {
+        "architecture": { "const": "risc-v" },
+        "xlen": { "enum": [32, 64] },
+        "isa": { "type": "string", "minLength": 1 },
+        "platform": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "backend": { "type": "string" },
+        "backendVersion": { "type": "string" },
+        "input": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "profile": { "enum": ["trap", "full"] },
+    "summary": {
+      "type": "object",
+      "required": [
+        "inputEvents",
+        "matchedTraceEvents",
+        "totalEvidenceEvents",
+        "emittedEvidenceEvents",
+        "truncated"
+      ],
+      "properties": {
+        "inputEvents": { "type": "integer", "minimum": 0 },
+        "matchedTraceEvents": { "type": "integer", "minimum": 0 },
+        "totalEvidenceEvents": { "type": "integer", "minimum": 0 },
+        "emittedEvidenceEvents": { "type": "integer", "minimum": 0 },
+        "truncated": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "traceSequence", "pc", "explanation"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^ev-[0-9]{4,}$" },
+          "kind": {
+            "enum": ["instruction", "state-change", "trap", "privilege-transition"]
+          },
+          "traceSequence": { "type": "integer", "minimum": 0 },
+          "pc": { "type": "string", "minLength": 1 },
+          "explanation": { "type": "string", "minLength": 1 },
+          "causedBy": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^ev-[0-9]{4,}$" }
+          },
+          "state": {
+            "type": "object",
+            "required": ["kind", "name", "after"],
+            "properties": {
+              "kind": { "enum": ["register", "csr", "memory"] },
+              "name": { "type": "string", "minLength": 1 },
+              "before": { "type": "string" },
+              "after": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": false
+}
+

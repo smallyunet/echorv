@@ -1,0 +1,64 @@
+{
+  "schema": "echorv.trace.v1",
+  "target": {
+    "architecture": "risc-v",
+    "xlen": 64,
+    "isa": "rv64imac_zicsr",
+    "platform": "virt"
+  },
+  "provenance": {
+    "backend": "fixture",
+    "backendVersion": "0.0.1",
+    "input": "illegal-csr-trap"
+  },
+  "events": [
+    {
+      "sequence": 41,
+      "pc": "0x802001a8",
+      "instruction": "li a0, 0x8000000000000000",
+      "privilege": "U",
+      "writes": [
+        {
+          "kind": "register",
+          "name": "a0",
+          "before": "0x0",
+          "after": "0x8000000000000000"
+        }
+      ]
+    },
+    {
+      "sequence": 42,
+      "pc": "0x802001ac",
+      "instruction": "csrw satp, a0",
+      "privilege": "U",
+      "writes": [
+        {
+          "kind": "csr",
+          "name": "mcause",
+          "before": "0x0",
+          "after": "0x2"
+        },
+        {
+          "kind": "csr",
+          "name": "mepc",
+          "before": "0x0",
+          "after": "0x802001ac"
+        },
+        {
+          "kind": "csr",
+          "name": "mtval",
+          "before": "0x0",
+          "after": "0x18051073"
+        }
+      ],
+      "trap": {
+        "cause": 2,
+        "name": "illegal-instruction",
+        "tval": "0x18051073",
+        "targetPc": "0x80000000",
+        "toPrivilege": "M"
+      }
+    }
+  ]
+}
+
