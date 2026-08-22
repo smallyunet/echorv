@@ -29,8 +29,11 @@ jobs:
           archive="echorv-${GITHUB_REF_NAME}-${{ matrix.target }}.tar.gz"
           mkdir -p dist
           tar -C "target/${{ matrix.target }}/release" -czf "dist/${archive}" echorv
-          shasum -a 256 "dist/${archive}" > "dist/${archive}.sha256"
-      - uses: actions/upload-artifact@v4
+          (
+            cd dist
+            shasum -a 256 "${archive}" > "${archive}.sha256"
+          )
+      - uses: actions/upload-artifact@v7
         with:
           name: echorv-${{ matrix.target }}
           path: dist/*
@@ -40,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: echorv-*
           path: dist
