@@ -22,11 +22,13 @@
       "properties": {
         "backend": { "type": "string" },
         "backendVersion": { "type": "string" },
-        "input": { "type": "string" }
+        "input": { "type": "string" },
+        "command": { "type": "array", "items": { "type": "string" } },
+        "notes": { "type": "array", "items": { "type": "string" } }
       },
       "additionalProperties": false
     },
-    "profile": { "enum": ["trap", "full"] },
+    "profile": { "enum": ["auto", "trap", "csr", "memory", "privilege", "full"] },
     "summary": {
       "type": "object",
       "required": [
@@ -49,15 +51,44 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "kind", "traceSequence", "pc", "explanation"],
+        "required": ["id", "kind", "traceSequence", "pc", "explanation", "confidence"],
         "properties": {
           "id": { "type": "string", "pattern": "^ev-[0-9]{4,}$" },
           "kind": {
-            "enum": ["instruction", "state-change", "trap", "privilege-transition"]
+            "enum": ["instruction", "state-change", "trap", "diagnosis", "privilege-transition"]
           },
           "traceSequence": { "type": "integer", "minimum": 0 },
           "pc": { "type": "string", "minLength": 1 },
           "explanation": { "type": "string", "minLength": 1 },
+          "confidence": { "enum": ["observed", "derived", "inferred"] },
+          "diagnostic": {
+            "enum": [
+              "instruction-address-misaligned",
+              "instruction-access-fault",
+              "illegal-instruction",
+              "breakpoint",
+              "load-address-misaligned",
+              "load-access-fault",
+              "store-address-misaligned",
+              "store-access-fault",
+              "environment-call",
+              "instruction-page-fault",
+              "load-page-fault",
+              "store-page-fault",
+              "unknown-trap"
+            ]
+          },
+          "symbol": { "type": "string", "minLength": 1 },
+          "source": {
+            "type": "object",
+            "required": ["file"],
+            "properties": {
+              "file": { "type": "string", "minLength": 1 },
+              "line": { "type": "integer", "minimum": 1 },
+              "column": { "type": "integer", "minimum": 1 }
+            },
+            "additionalProperties": false
+          },
           "causedBy": {
             "type": "array",
             "items": { "type": "string", "pattern": "^ev-[0-9]{4,}$" }
@@ -84,4 +115,3 @@
   },
   "additionalProperties": false
 }
-

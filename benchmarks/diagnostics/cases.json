@@ -1,0 +1,10 @@
+[
+  { "id": "illegal-instruction", "log": "fixtures/spike/illegal-instruction.log", "cause": 2, "diagnostic": "illegal-instruction", "confidence": "derived" },
+  { "id": "user-ecall", "log": "fixtures/spike/user-ecall.log", "cause": 8, "diagnostic": "environment-call", "confidence": "derived" },
+  { "id": "load-address-misaligned", "log": "fixtures/spike/load-address-misaligned.log", "cause": 4, "diagnostic": "load-address-misaligned", "confidence": "derived" },
+  { "id": "load-access-fault", "log": "fixtures/spike/load-access-fault.log", "cause": 5, "diagnostic": "load-access-fault", "confidence": "inferred" },
+  { "id": "store-access-fault", "log": "fixtures/spike/store-access-fault.log", "cause": 7, "diagnostic": "store-access-fault", "confidence": "inferred" },
+  { "id": "instruction-access-fault", "log": "fixtures/spike/instruction-access-fault.log", "cause": 1, "diagnostic": "instruction-access-fault", "confidence": "inferred" },
+  { "id": "load-page-fault", "log": "fixtures/spike/load-page-fault.log", "cause": 13, "diagnostic": "load-page-fault", "confidence": "derived" },
+  { "id": "store-page-fault", "log": "fixtures/spike/store-page-fault.log", "cause": 15, "diagnostic": "store-page-fault", "confidence": "derived" }
+]

@@ -3,8 +3,16 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum EvidenceProfile {
+    /// Select the most relevant evidence for the observed execution.
+    Auto,
     /// Emit only trap-related causal chains.
     Trap,
+    /// Emit CSR writes and related traps.
+    Csr,
+    /// Emit memory changes and memory-related traps.
+    Memory,
+    /// Emit privilege-changing instructions and traps.
+    Privilege,
     /// Emit instructions, state changes, and traps.
     Full,
 }
@@ -32,31 +40,43 @@ pub struct Target {
     pub architecture: String,
     pub xlen: u16,
     pub isa: String,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub platform: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Provenance {
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub backend: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub backend_version: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub input: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub command: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub notes: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TraceEvent {
     pub sequence: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hart: Option<u64>,
     pub pc: String,
     pub instruction: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub instruction_bytes: Option<String>,
     pub privilege: Privilege,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub symbol: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source: Option<SourceLocation>,
     #[serde(default)]
     pub writes: Vec<StateWrite>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub trap: Option<Trap>,
 }
 
@@ -70,7 +90,7 @@ pub enum Privilege {
 
 impl std::fmt::Display for Privilege {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(formatter, "{:?}", self)
+        write!(formatter, "{self:?}")
     }
 }
 
@@ -79,7 +99,7 @@ impl std::fmt::Display for Privilege {
 pub struct StateWrite {
     pub kind: StateKind,
     pub name: String,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub before: Option<String>,
     pub after: String,
 }
@@ -90,6 +110,16 @@ pub enum StateKind {
     Register,
     Csr,
     Memory,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SourceLocation {
+    pub file: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub line: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub column: Option<u32>,
 }
 
 impl std::fmt::Display for StateKind {
@@ -108,10 +138,12 @@ impl std::fmt::Display for StateKind {
 pub struct Trap {
     pub cause: u64,
     pub name: String,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tval: Option<String>,
     pub target_pc: String,
     pub to_privilege: Privilege,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub delegated: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -145,6 +177,13 @@ pub struct EvidenceEvent {
     pub trace_sequence: u64,
     pub pc: String,
     pub explanation: String,
+    pub confidence: Confidence,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub diagnostic: Option<DiagnosticCode>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub symbol: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source: Option<SourceLocation>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub caused_by: Vec<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -157,5 +196,32 @@ pub enum EvidenceKind {
     Instruction,
     StateChange,
     Trap,
+    Diagnosis,
     PrivilegeTransition,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Confidence {
+    Observed,
+    Derived,
+    Inferred,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum DiagnosticCode {
+    InstructionAddressMisaligned,
+    InstructionAccessFault,
+    IllegalInstruction,
+    Breakpoint,
+    LoadAddressMisaligned,
+    LoadAccessFault,
+    StoreAddressMisaligned,
+    StoreAccessFault,
+    EnvironmentCall,
+    InstructionPageFault,
+    LoadPageFault,
+    StorePageFault,
+    UnknownTrap,
 }

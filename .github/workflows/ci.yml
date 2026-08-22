@@ -13,10 +13,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: dtolnay/rust-toolchain@1.85.0
+      - uses: dtolnay/rust-toolchain@1.88.0
         with:
           components: clippy,rustfmt
       - run: cargo fmt --check
       - run: cargo clippy --all-targets --all-features -- -D warnings
       - run: cargo test --all-features
       - run: cargo run --locked -- explain fixtures/illegal-csr-trap.json --format json
+      - name: Validate public JSON schemas against generated output
+        run: |
+          python3 -m pip install jsonschema==4.25.1
+          cargo run --locked -- import spike fixtures/spike/illegal-instruction.log --output /tmp/echorv-trace.json
+          cargo run --locked -- explain /tmp/echorv-trace.json --format json --output /tmp/echorv-evidence.json
+          python3 scripts/validate-schemas.py /tmp/echorv-trace.json /tmp/echorv-evidence.json
+
+  spike-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@1.88.0
+        with:
+          components: clippy,rustfmt
+      - name: Install RISC-V and Spike build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-riscv64-unknown-elf device-tree-compiler libboost-regex-dev libboost-system-dev
+      - name: Build pinned Spike
+        run: |
+          git clone https://github.com/riscv-software-src/riscv-isa-sim.git /tmp/riscv-isa-sim
+          git -C /tmp/riscv-isa-sim checkout 262df8bfac33b0419688429dd066487744db5c79
+          mkdir /tmp/riscv-isa-sim/build
+          cd /tmp/riscv-isa-sim/build
+          ../configure --prefix=/tmp/spike
+          make -j2
+          make install
+      - name: Run real ELF through Spike and EchoRV
+        run: bash scripts/spike-e2e.sh /tmp/spike/bin/spike

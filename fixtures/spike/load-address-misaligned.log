@@ -1,0 +1,5 @@
+core   0: 0x0000000080200120 (0x0002b303) ld      t1, 0(t0)
+core   0: exception trap_load_address_misaligned, epc 0x0000000080200120
+core   0:           tval 0x0000000080202001
+core   0: 0x0000000080000000 (0x343023f3) csrr    t2, mtval
+core   0: 3 0x0000000080000000 (0x343023f3) x7 0x0000000080202001

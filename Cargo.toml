@@ -1,8 +1,8 @@
 [package]
 name = "echorv"
-version = "0.0.1"
+version = "0.1.0"
 edition = "2021"
-rust-version = "1.85"
+rust-version = "1.88"
 description = "Bounded causal execution evidence for RISC-V firmware"
 license = "MIT"
 repository = "https://github.com/smallyunet/echorv"
@@ -12,10 +12,15 @@ categories = ["command-line-utilities", "development-tools::debugging"]
 
 [dependencies]
 anyhow = "1.0"
+addr2line = { version = "0.26", features = ["loader"] }
 clap = { version = "4.5", features = ["derive"] }
+object = "0.39"
+regex = "1.11"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+tempfile = "3.27"
 thiserror = "2.0"
+wait-timeout = "0.2"
 
 [profile.release]
 lto = "thin"

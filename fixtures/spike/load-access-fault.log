@@ -1,0 +1,5 @@
+core   0: 0x0000000080200140 (0x0002b303) ld      t1, 0(t0)
+core   0: exception trap_load_access_fault, epc 0x0000000080200140
+core   0:           tval 0xfffffffffffff000
+core   0: 0x0000000080000000 (0x342023f3) csrr    t2, mcause
+core   0: 3 0x0000000080000000 (0x342023f3) x7 0x0000000000000005

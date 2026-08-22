@@ -1,0 +1,5 @@
+core   0: 0x0000000080000190 (0x01c53023) sd      t3, 0(a0)
+core   0: exception trap_store_page_fault, epc 0x0000000080000190
+core   0:           tval 0x0000010080003000
+core   0: 0x0000000080000214 (0x14202f73) csrr    t5, scause
+core   0: 1 0x0000000080000214 (0x14202f73) x30 0x000000000000000f

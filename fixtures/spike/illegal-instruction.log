@@ -1,0 +1,5 @@
+core   0: 0x00000000802001ac (0x18051073) csrw    satp, a0
+core   0: exception trap_illegal_instruction, epc 0x00000000802001ac
+core   0:           tval 0x0000000018051073
+core   0: 0x0000000080000000 (0x34202573) csrr    a0, mcause
+core   0: 3 0x0000000080000000 (0x34202573) x10 0x0000000000000002

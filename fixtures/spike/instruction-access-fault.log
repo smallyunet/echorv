@@ -1,0 +1,6 @@
+core   0: 0x0000000080200180 (0x00028067) jr      t0
+core   0: 3 0x0000000080200180 (0x00028067)
+core   0: exception trap_instruction_access_fault, epc 0xfffffffffffff000
+core   0:           tval 0xfffffffffffff000
+core   0: 0x0000000080000000 (0x341023f3) csrr    t2, mepc
+core   0: 3 0x0000000080000000 (0x341023f3) x7 0xfffffffffffff000
