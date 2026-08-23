@@ -60,3 +60,25 @@ fn doctor_fails_closed_when_spike_is_missing() {
     assert!(!output.status.success());
     assert!(String::from_utf8_lossy(&output.stdout).contains("unavailable"));
 }
+
+#[test]
+fn emits_sarif_and_can_fail_the_ci_gate() {
+    let output = Command::new(env!("CARGO_BIN_EXE_echorv"))
+        .args([
+            "explain",
+            fixture().to_str().unwrap(),
+            "--format",
+            "sarif",
+            "--fail-on-diagnostic",
+        ])
+        .output()
+        .unwrap();
+
+    assert!(!output.status.success());
+    let document: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(document["version"], "2.1.0");
+    assert_eq!(
+        document["runs"][0]["results"][0]["ruleId"],
+        "illegal-instruction"
+    );
+}

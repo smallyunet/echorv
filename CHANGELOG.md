@@ -2,6 +2,16 @@
 
 All notable changes to EchoRV are documented in this file.
 
+## [0.2.0] - 2026-08-23
+
+### Added
+
+- SARIF 2.1.0 rendering for diagnosed RISC-V traps.
+- Stable rules, source locations, symbols, PCs, confidence, and causal IDs in
+  CI-consumable output.
+- `--fail-on-diagnostic` for write-then-fail CI behavior.
+- CLI and schema-shape regression coverage for SARIF output.
+
 ## [0.1.0] - 2026-08-22
 
 ### Added
@@ -23,6 +33,7 @@ All notable changes to EchoRV are documented in this file.
 - Increased the default evidence limit to 200 and made `auto` the default profile.
 
 [0.1.0]: https://github.com/smallyunet/echorv/releases/tag/v0.1.0
+[0.2.0]: https://github.com/smallyunet/echorv/releases/tag/v0.2.0
 
 ## [0.0.1] - 2026-08-22
 

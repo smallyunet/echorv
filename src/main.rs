@@ -2,8 +2,9 @@ use anyhow::{bail, Context, Result};
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use echorv::spike::spike_version;
 use echorv::{
-    analyze_with_options, enrich_trace, inspect_elf, parse_spike_log, run_spike, AnalyzeOptions,
-    ElfInfo, EvidenceDocument, EvidenceFormat, EvidenceProfile, SpikeRunOptions, TraceDocument,
+    analyze_with_options, enrich_trace, inspect_elf, parse_spike_log, render_sarif, run_spike,
+    AnalyzeOptions, ElfInfo, EvidenceDocument, EvidenceFormat, EvidenceProfile, SpikeRunOptions,
+    TraceDocument,
 };
 use serde::Serialize;
 use serde_json::json;
@@ -115,6 +116,9 @@ struct EvidenceArgs {
     /// Write output to a file instead of stdout.
     #[arg(short, long)]
     output: Option<PathBuf>,
+    /// Exit non-zero after writing evidence when a diagnostic is present.
+    #[arg(long)]
+    fail_on_diagnostic: bool,
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -221,8 +225,18 @@ fn explain_trace(trace: TraceDocument, args: EvidenceArgs) -> Result<()> {
         EvidenceFormat::Human => render_human(&evidence),
         EvidenceFormat::Json => serde_json::to_string_pretty(&evidence)?,
         EvidenceFormat::Jsonl => render_jsonl(&evidence)?,
+        EvidenceFormat::Sarif => serde_json::to_string_pretty(&render_sarif(&evidence))?,
     };
-    write_output(args.output, &rendered)
+    write_output(args.output, &rendered)?;
+    if args.fail_on_diagnostic
+        && evidence
+            .events
+            .iter()
+            .any(|event| event.diagnostic.is_some())
+    {
+        bail!("RISC-V execution produced one or more diagnostics")
+    }
+    Ok(())
 }
 
 fn doctor(spike: PathBuf, format: InspectFormat) -> Result<()> {

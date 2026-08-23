@@ -22,6 +22,7 @@ pub enum EvidenceFormat {
     Human,
     Json,
     Jsonl,
+    Sarif,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -208,7 +209,7 @@ pub enum Confidence {
     Inferred,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum DiagnosticCode {
     InstructionAddressMisaligned,

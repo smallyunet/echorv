@@ -4,7 +4,7 @@
     "name": "EchoRV",
     "title": "Explain RISC-V traps from execution to source.",
     "description": "EchoRV runs or imports RISC-V traces and turns instructions, traps, CSR changes, privilege transitions, and source locations into bounded evidence.",
-    "version": "v0.1.0",
+    "version": "v0.2.0",
     "schema": "echorv.evidence.v1",
     "accent": "#f59e0b",
     "accentSoft": "rgba(245, 158, 11, 0.13)",

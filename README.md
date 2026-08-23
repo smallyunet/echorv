@@ -25,7 +25,20 @@ U-mode executes csrw satp, a0 at firmware.S:31
   -> control transfers to M-mode at mtvec
 ```
 
-## What v0.1.0 adds
+## What v0.2.0 adds
+
+- SARIF 2.1.0 output with stable RISC-V diagnostic rule IDs;
+- source-backed physical locations and symbol-backed logical locations;
+- `--fail-on-diagnostic`, which writes evidence first and then exits non-zero
+  for CI gating;
+- direct compatibility with GitHub Code Scanning SARIF upload workflows.
+
+```bash
+echorv run firmware.elf --format sarif --output echorv.sarif \
+  --fail-on-diagnostic
+```
+
+## What v0.1.0 established
 
 - direct `ELF -> Spike -> evidence` execution;
 - import of existing Spike `-l --log-commits` logs;
@@ -125,7 +138,7 @@ Profiles:
 - `privilege`: ECALL/return instructions and privilege transitions;
 - `full`: all normalized execution events.
 
-Formats are `human`, `json`, and streaming `jsonl`.
+Formats are `human`, `json`, streaming `jsonl`, and SARIF 2.1.0.
 
 ## Evidence boundaries
 
@@ -190,7 +203,7 @@ bash scripts/spike-e2e.sh /path/to/spike
 - Spike is the only direct execution adapter.
 - Generic commit logs do not expose the exact PMP/PMA decision path.
 - Hypervisor/VS/VU privilege is not represented yet.
-- Vector lane semantics, multi-hart causality, weak memory, full Linux boot analysis, and RTL timing are outside v0.1.0.
+- Vector lane semantics, multi-hart causality, weak memory, full Linux boot analysis, and RTL timing are outside v0.2.0.
 - Source information depends on DWARF being present and readable.
 
 ## Echo family

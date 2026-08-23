@@ -20,6 +20,15 @@ jobs:
       - run: cargo clippy --all-targets --all-features -- -D warnings
       - run: cargo test --all-features
       - run: cargo run --locked -- explain fixtures/illegal-csr-trap.json --format json
+      - name: Exercise SARIF CI output
+        shell: bash
+        run: |
+          set +e
+          cargo run --locked -- explain fixtures/illegal-csr-trap.json --format sarif --output /tmp/echorv.sarif --fail-on-diagnostic
+          status=$?
+          set -e
+          test "$status" -ne 0
+          jq -e '.version == "2.1.0" and (.runs[0].results | length > 0)' /tmp/echorv.sarif
       - name: Validate public JSON schemas against generated output
         run: |
           python3 -m pip install jsonschema==4.25.1
