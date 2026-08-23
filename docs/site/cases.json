@@ -9,7 +9,9 @@
     "accent": "#f59e0b",
     "accentSoft": "rgba(245, 158, 11, 0.13)",
     "repository": "https://github.com/smallyunet/echorv",
+    "docs": "https://github.com/smallyunet/echorv/blob/main/docs/README.md",
     "release": "https://github.com/smallyunet/echorv/releases/latest",
+    "install": "cargo install --git https://github.com/smallyunet/echorv --tag v0.2.0",
     "boundary": "Spike execution and log import happen locally. The static page ships frozen trace-derived evidence and never runs firmware.",
     "local": "Run a RISC-V ELF through Spike or import an existing Spike commit log from the CLI."
   },

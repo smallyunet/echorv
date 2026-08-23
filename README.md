@@ -12,7 +12,8 @@ EchoRV runs or imports RISC-V execution traces and turns them into compact, sour
 
 [Static playground](https://smallyunet.github.io/echorv/) ·
 [latest release](https://github.com/smallyunet/echorv/releases/latest) ·
-[Evidence schema](schemas/echorv.evidence.v1.schema.json)
+[documentation](docs/README.md) ·
+[evidence schema](schemas/echorv.evidence.v1.schema.json)
 
 > The playground is a static GitHub Pages site backed by committed evidence
 > snapshots. Spike execution and log import remain local CLI workflows.
@@ -25,20 +26,33 @@ U-mode executes csrw satp, a0 at firmware.S:31
   -> control transfers to M-mode at mtvec
 ```
 
-## What v0.2.0 adds
+## Quick start
 
-- SARIF 2.1.0 output with stable RISC-V diagnostic rule IDs;
-- source-backed physical locations and symbol-backed logical locations;
-- `--fail-on-diagnostic`, which writes evidence first and then exits non-zero
-  for CI gating;
-- direct compatibility with GitHub Code Scanning SARIF upload workflows.
+```bash
+cargo install --git https://github.com/smallyunet/echorv --tag v0.2.0
+echorv --version
+
+# With Spike and a RISC-V ELF available:
+echorv doctor
+echorv run firmware.elf --isa rv64imac_zicsr --profile auto --format json
+```
+
+`echorv explain`, `import`, and `inspect` are self-contained. `echorv run`
+expects a recent `spike` executable in `PATH` or at the path supplied through
+`--spike`.
+
+## CI diagnostics with SARIF
+
+SARIF 2.1.0 output includes stable diagnostic rule IDs, source-backed physical
+locations, and symbol-backed logical locations. `--fail-on-diagnostic` writes
+the evidence before returning a non-zero status for CI gating.
 
 ```bash
 echorv run firmware.elf --format sarif --output echorv.sarif \
   --fail-on-diagnostic
 ```
 
-## What v0.1.0 established
+## Core capabilities
 
 - direct `ELF -> Spike -> evidence` execution;
 - import of existing Spike `-l --log-commits` logs;
@@ -49,16 +63,6 @@ echorv run firmware.elf --format sarif --output echorv.sarif \
 - automatic, trap, CSR, memory, privilege, and full evidence profiles;
 - PC/trap-centered context selection with bounded output;
 - eight frozen Spike log compatibility cases and seven real ELF/Spike CI cases.
-
-## Install
-
-Download a release archive from GitHub, or build from source with Rust 1.88 or newer:
-
-```bash
-cargo install --path .
-```
-
-`echorv explain`, `import`, and `inspect` are self-contained. `echorv run` expects a recent `spike` executable in `PATH` or at the path supplied through `--spike`.
 
 ## Run a real ELF
 
@@ -182,6 +186,16 @@ Evidence includes stable IDs, source provenance, state changes, explicit `caused
 `fixtures/spike/` contains minimized compatibility logs for eight trap paths. `fixtures/programs/trap_cases.S` is compiled into seven real RV64 ELFs in CI and executed by a pinned Spike commit before EchoRV validates the emitted trace, diagnosis, and DWARF location.
 
 The corpus is a conformance gate, not a measured claim that EchoRV improves Agent accuracy. The benchmark contract in [`benchmarks/diagnostics/README.md`](benchmarks/diagnostics/README.md) keeps those claims separate.
+
+## Documentation
+
+| Goal | Start here |
+|---|---|
+| Find the right guide | [Documentation index](docs/README.md) |
+| Integrate normalized traces | [Trace schema](schemas/echorv.trace.v1.schema.json) |
+| Integrate bounded evidence | [Evidence schema](schemas/echorv.evidence.v1.schema.json) |
+| Upload diagnostics to code scanning | [SARIF workflow](#ci-diagnostics-with-sarif) |
+| Evaluate diagnostic quality | [Benchmark contract](benchmarks/diagnostics/README.md) |
 
 ## Development
 
